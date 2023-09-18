@@ -2,8 +2,9 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get_x_state_management/db/notes_draft.dart';
-import 'package:get_x_state_management/model/notes.dart';
+import 'package:get_x_state_management/controller/draft_controller.dart';
+import 'package:get_x_state_management/controller/note_controller.dart';
+import 'package:get_x_state_management/model/model.dart';
 import 'package:image_picker/image_picker.dart';
 
 class CreateNotePage extends StatefulWidget {
@@ -14,23 +15,24 @@ class CreateNotePage extends StatefulWidget {
 }
 
 class _CreateNotePageState extends State<CreateNotePage> {
-  GlobalKey formKey = GlobalKey<FormState>();
+  final _formKey = GlobalKey<FormState>();
 
-  TextEditingController title = TextEditingController();
-  TextEditingController description = TextEditingController();
+  TextEditingController titleClt = TextEditingController();
+  TextEditingController descriptionClt = TextEditingController();
   File? finalImage;
   String imageHint = 'Choose Image';
 
-  NotesDrafts draftsController = Get.put(NotesDrafts());
+  DraftController draftsController = Get.put(DraftController());
+  NoteController noteController = Get.put(NoteController());
 
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
         draftsController.addDrafts(
-          Notes(
-          title: title.text,
-          description: description.text,
+          NoteModel(
+          title: titleClt.text,
+          description: descriptionClt.text,
           image: finalImage!
           )
         );
@@ -44,24 +46,24 @@ class _CreateNotePageState extends State<CreateNotePage> {
           centerTitle: true,
         ),
         body: Form(
-          key: formKey,
+          key: _formKey,
           child: ListView(
             padding: const EdgeInsets.all(12.0),
             children: [
               TextFormField(
-                controller: title,
+                controller: titleClt,
                 decoration: const InputDecoration(
                   hintText: 'Title',
                 ),
                 validator: (value) {
                   if(value!.isEmpty) {
-                    return "Field can't be empty";
+                    return "The field can't be empty";
                   }
                 },
               ),
               TextFormField(
-                controller: description,
-                maxLines: 3,
+                controller: descriptionClt,
+                maxLines: 5,
                 decoration: const InputDecoration(
                   hintText: 'Description',
                 ),
@@ -91,7 +93,21 @@ class _CreateNotePageState extends State<CreateNotePage> {
                   shape: const StadiumBorder()
                 ),
                 child: const Text('Save'),
-                onPressed: () {}
+                onPressed: () {
+                  final form = _formKey.currentState!;
+
+                  if(form.validate()) {
+                    form.save();
+                    noteController.addNote(
+                      NoteModel(
+                        title: titleClt.text,
+                        description: descriptionClt.text,
+                        image: finalImage!
+                      )
+                    );
+                    Get.back();
+                  }
+                }
               )
             ],
           ),
@@ -103,8 +119,8 @@ class _CreateNotePageState extends State<CreateNotePage> {
   _getFromGrllery() async {
     XFile? pickedFile = await ImagePicker().pickImage(
       source: ImageSource.gallery,
-      maxHeight: 1800,
-      maxWidth: 1800
+      maxHeight: 1000,
+      maxWidth: 1000
     );
     if(pickedFile != null) {
       File imageFile = File(pickedFile.path);

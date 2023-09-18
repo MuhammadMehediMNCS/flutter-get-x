@@ -40,9 +40,7 @@ class _BottomNavDesignState extends State<BottomNavDesign> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.purple[300],
         child: const Icon(Icons.edit_note),
-        onPressed: () {
-          Get.to(const CreateNotePage());
-        }
+        onPressed: () => Get.to(const CreateNotePage())
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: TabBarWidget(
